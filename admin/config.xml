@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<fieldset 
+		name="author_options"
+		label="COM_AUTHOR_CONFIG_AUTHOR_OPTIONS" >
+
+		<field
+			name="article_limit"
+			type="text"
+			label="COM_AUTHOR_CONFIG_FIELD_ARTICLE_LIMIT_LABEL"
+			description="COM_AUTHOR_CONFIG_FIELD_ARTICLE_LIMIT_DESC"
+			default="10" 
+		/>
+
+	</fieldset>
+
+	<fieldset
+		name="permissions"
+		label="JCONFIG_PERMISSIONS_LABEL"
+		description="JCONFIG_PERMISSIONS_DESC"
+		>
+
+		<field
+			name="rules"
+			type="rules"
+			label="JCONFIG_PERMISSIONS_LABEL"
+			filter="rules"
+			validate="rules"
+			component="com_author"
+			section="component"
+		/>
+
+	</fieldset>
+</config>
