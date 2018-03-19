@@ -43,7 +43,10 @@ class AuthorRouterRulesLegacy implements JComponentRouterRulesInterface
 	public function preprocess(&$query)
 	{
 	}
-
+	
+	static $items;
+	static $found;
+	
 	/**
 	 * Build the route for the com_author component
 	 *
@@ -62,51 +65,47 @@ class AuthorRouterRulesLegacy implements JComponentRouterRulesInterface
 		
 		$author = (int)$query['author_id'] ;
 		$category = isset( $query['cat_id'] ) ? (int)$query['cat_id'] : false ;
-		
-		// Declare static variables.
-		static $items;		
-		$found = array(
-			'articles'=>array(),
-			'category'=>array(),
-		);
-
 		// Get the relevant menu items if not loaded.
-		if (empty($items))
+		if (empty(self::$items))
 		{
+			self::$found = array(
+				'articles'=>array(),
+				'category'=>array(),
+			);
 			// Get all relevant menu items.
-			$items = $this->router->menu->getItems('component', 'com_author');
+			self::$items = $this->router->menu->getItems('component', 'com_author');
 
 			// Build an array of serialized query strings to menu item id mappings.
-			foreach ($items as $item)
+			foreach (self::$items as $item)
 			{
 				// sth wrong, then skip
 				if (empty($item->query['view']) || empty($item->query['author_id'])) continue; 
 				$aid = $item->query['author_id'] ;
 				if( $item->query['view']=='articles' ){
-					$found['articles'][$aid]= $item->id; var_dump( $item->id );
+					self::$found['articles'][$aid]= $item->id;
 				}else{
 					$cid =  $item->query['cat_id'];
-					$found['category'][$aid][$cid] = $item->id ; 				
+					self::$found['category'][$aid][$cid] = $item->id ; 				
 				}
 			}
 		}
 					
 		if( $query['view'] == 'category' && $category ){
-			if( isset( $found['category'][$author][$category] ) ){
+			if( isset( self::$found['category'][$author][$category] ) ){
 				unset( $query['view'] ) ;
 				unset( $query['layout'] ) ;
 				unset( $query['author_id'] ) ;
 				unset( $query['category_id'] ) ;
-				$query['Itemid'] = $found['category'][$author][$category];
+				$query['Itemid'] = self::$found['category'][$author][$category];
 			}else{
 				if( isset( $query['Itemid'] ) ) unset( $query['Itemid'] ) ; // invalid Itemid
 			}
 		}else{
-			if( isset( $found['articles'][$author] ) ){
+			if( isset( self::$found['articles'][$author] ) ){
 				unset( $query['view'] ) ;
 				unset( $query['layout'] ) ;
 				unset( $query['author_id'] ) ;
-				$query['Itemid'] = $found['articles'][$author];		
+				$query['Itemid'] = self::$found['articles'][$author];		
 			}else{
 				if( isset( $query['Itemid'] ) ) unset( $query['Itemid'] ) ; // invalid Itemid
 			}
