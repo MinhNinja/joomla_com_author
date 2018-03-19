@@ -65,7 +65,10 @@ class AuthorRouterRulesLegacy implements JComponentRouterRulesInterface
 		
 		// Declare static variables.
 		static $items;		
-		$found = false;
+		$found = array(
+			'articles'=>array(),
+			'category'=>array(),
+		);
 
 		// Get the relevant menu items if not loaded.
 		if (empty($items))
@@ -78,21 +81,37 @@ class AuthorRouterRulesLegacy implements JComponentRouterRulesInterface
 			{
 				// sth wrong, then skip
 				if (empty($item->query['view']) || empty($item->query['author_id'])) continue; 
-				if ( $item->query['author_id'] == $author )
-				{
-					if( $item->query['view']=='articles' ){
-						$found = $item;
-					}else{
-						if( $item->query['cat_id'] == $category ){
-							$found = $item;
-						}
-					}					
+				$aid = $item->query['author_id'] ;
+				if( $item->query['view']=='articles' ){
+					$found['articles'][$aid]= $item->id; var_dump( $item->id );
+				}else{
+					$cid =  $item->query['cat_id'];
+					$found['category'][$aid][$cid] = $item->id ; 				
 				}
 			}
 		}
+					
+		if( $query['view'] == 'category' && $category ){
+			if( isset( $found['category'][$author][$category] ) ){
+				unset( $query['view'] ) ;
+				unset( $query['layout'] ) ;
+				unset( $query['author_id'] ) ;
+				unset( $query['category_id'] ) ;
+				$query['Itemid'] = $found['category'][$author][$category];
+			}else{
+				if( isset( $query['Itemid'] ) ) unset( $query['Itemid'] ) ; // invalid Itemid
+			}
+		}else{
+			if( isset( $found['articles'][$author] ) ){
+				unset( $query['view'] ) ;
+				unset( $query['layout'] ) ;
+				unset( $query['author_id'] ) ;
+				$query['Itemid'] = $found['articles'][$author];		
+			}else{
+				if( isset( $query['Itemid'] ) ) unset( $query['Itemid'] ) ; // invalid Itemid
+			}
+		}
 		
-		if( $found ) return ; 
-
 		$total = count($segments);
 
 		for ($i = 0; $i < $total; $i++)
@@ -128,7 +147,7 @@ class AuthorRouterRulesLegacy implements JComponentRouterRulesInterface
 		}
 
 		// Get the package from the route segments.
-		$author_id = array_pop($segments);
+		$author_id = array_shift($segments);
 
 		if (is_numeric($author_id))
 		{
@@ -137,7 +156,7 @@ class AuthorRouterRulesLegacy implements JComponentRouterRulesInterface
 			$vars['layout'] = 'blog' ;
 			
 			if( count( $segments )  ){
-				$category = array_pop($segments);
+				$category = array_shift($segments);
 				$category = (int) $category ;
 				if( $category ){
 					$vars['cat_id'] = (int) $category ;
